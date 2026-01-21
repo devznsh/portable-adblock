@@ -1,0 +1,124 @@
+# Laptop-Based Pi-hole + Tailscale Ad Blocking (Windows)
+
+A simple, Raspberry Pi–free setup to block ads across devices using **Pi-hole in Docker** on a Windows laptop and **Tailscale** for secure DNS routing. This gives network‑wide ad blocking at home *and* on the go.
+
+> Tested on **iPhone** via Tailscale — ads were blocked successfully.
+
+---
+
+## ✨ What This Does
+
+- Runs **Pi-hole** in Docker on a Windows laptop
+- Uses **Tailscale** to route DNS from devices anywhere
+- Blocks ads on **iPhone** and other devices when connected
+
+---
+
+##  Requirements
+
+- Windows laptop (always on when you want ad blocking)
+- Docker Desktop (with WSL2)
+- Tailscale (Windows + iPhone)
+
+---
+
+## ⚙️ Setup Steps
+
+### 1) Install Docker + Tailscale
+- Docker Desktop: https://www.docker.com/products/docker-desktop  
+- Tailscale (Windows): https://tailscale.com/download/windows  
+- Tailscale (iPhone): App Store
+
+---
+
+### 2) Create `docker-compose.yml`
+
+```yaml
+version: "3"
+
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    hostname: pihole
+    environment:
+      TZ: "Asia/Kolkata"
+      WEBPASSWORD: "your-password"
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "80:80/tcp"
+    volumes:
+      - "./etc-pihole:/etc/pihole"
+      - "./etc-dnsmasq.d:/etc/dnsmasq.d"
+    restart: unless-stopped
+```
+
+---
+
+### 3) Start Pi-hole
+
+```powershell
+docker compose up -d
+```
+
+---
+
+### 4) Open Pi-hole Admin
+
+```
+http://localhost/admin
+```
+
+Login using the password from `WEBPASSWORD`.
+
+---
+
+### 5) Allow Tailscale traffic in Pi-hole
+**Settings → DNS → Interface settings →** 
+
+✅ **Permit all origins**
+
+---
+
+### 6) Configure Tailscale DNS
+1. Open Tailscale on Windows and copy your **Tailscale IP** (`100.x.x.x`).
+2. Go to **Tailscale Admin Console → DNS**  
+   - Add **Custom nameserver** = your laptop’s Tailscale IP  
+   - Turn **Override local DNS** ON
+
+---
+
+### 7) Connect iPhone
+- Install Tailscale on iPhone  
+- Turn it ON  
+- Ads are now blocked via Pi-hole
+
+---
+
+##  Testing
+
+- https://testads.org  
+- https://speedtest.net (usually shows ads)
+
+---
+
+##  Notes
+
+- Your laptop must be **ON** for ad blocking to work.
+- You can reset Pi-hole password if needed:
+  ```powershell
+  docker exec -it pihole pihole setpassword
+  ```
+
+---
+
+## 🙌 Author
+
+**Devansh Gaur**
+
+---
+
+## 📌 Credits
+
+Inspired by the Pi-hole + Tailscale community guides and Raspberry Pi setups.
